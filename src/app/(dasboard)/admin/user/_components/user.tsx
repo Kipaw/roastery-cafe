@@ -1,17 +1,21 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import DataTable from "@/components/ui/common/data-table";
 import DropdownAction from "@/components/ui/common/dropdown-action";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { HEADER_TABLE_USER } from "@/constants/user-constant";
 import useDataTable from "@/hooks/use-data-table";
 import { createClient } from "@/lib/supabase/client";
+import { Profile } from "@/types/auth";
 import { useQuery } from "@tanstack/react-query";
 import { Pencil, Trash2 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import DialogCreateUser from "./dialog-create-user";
+import DialogDeleteUser from "./dialog-delete-user";
+import DialogUpdateUser from "./dialog-update-user";
 
 export default function UserManagement() {
   const supabase = createClient();
@@ -23,7 +27,12 @@ export default function UserManagement() {
     handleChangeLimit,
     handleChangeSearch,
   } = useDataTable();
-  const { data: users, isLoading } = useQuery({
+
+  const {
+    data: users,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["users", currentPage, currentLimit, currentSearch],
     queryFn: async () => {
       const result = await supabase
@@ -33,23 +42,34 @@ export default function UserManagement() {
         .order("created_at")
         .ilike("name", `%${currentSearch}%`);
 
-      if (result.error)
-        toast.error("Get user data failed", {
+      if (result.error) {
+        toast.error("Get User data failed", {
           description: result.error.message,
         });
+      }
 
       return result;
     },
   });
 
+  const [selectedAction, setSelectedAction] = useState<{
+    data: Profile;
+    type: "update" | "delete";
+  } | null>(null);
+
+  const handleChangeAction = (open: boolean) => {
+    if (!open) setSelectedAction(null);
+  };
+
   const filteredData = useMemo(() => {
     return (users?.data || []).map((user, index) => {
       return [
-        (currentPage - 1) * currentLimit + index + 1,
+        currentLimit * (currentPage - 1) + index + 1,
         user.id,
         user.name,
         user.role,
         <DropdownAction
+          key={user.id}
           menu={[
             {
               label: (
@@ -58,7 +78,9 @@ export default function UserManagement() {
                   Edit
                 </span>
               ),
-              action: () => {},
+              action: () => {
+                setSelectedAction({ data: user, type: "update" });
+              },
             },
             {
               label: (
@@ -68,7 +90,9 @@ export default function UserManagement() {
                 </span>
               ),
               variant: "destructive",
-              action: () => {},
+              action: () => {
+                setSelectedAction({ data: user, type: "delete" });
+              },
             },
           ]}
         />,
@@ -84,7 +108,7 @@ export default function UserManagement() {
 
   return (
     <div className="w-full">
-      <div className="flex flex-col lg:flex-row mb-4 gap-2 justify-between w-full">
+      <div className="mb-4 flex w-full flex-col justify-between gap-2 lg:flex-row">
         <h1 className="text-2xl font-bold">User Management</h1>
         <div className="flex gap-2">
           <Input
@@ -95,18 +119,31 @@ export default function UserManagement() {
             <DialogTrigger render={<Button variant="outline" />}>
               Create
             </DialogTrigger>
+            <DialogCreateUser refetch={refetch} />
           </Dialog>
         </div>
       </div>
       <DataTable
         header={HEADER_TABLE_USER}
-        isLoading={isLoading}
         data={filteredData}
+        isLoading={isLoading}
         totalPages={totalPages}
         currentPage={currentPage}
         currentLimit={currentLimit}
         onChangePage={handleChangePage}
         onChangeLimit={handleChangeLimit}
+      />
+      <DialogUpdateUser
+        open={selectedAction !== null && selectedAction.type === "update"}
+        refetch={refetch}
+        currentData={selectedAction?.data}
+        handleChangeAction={handleChangeAction}
+      />
+      <DialogDeleteUser
+        open={selectedAction !== null && selectedAction.type === "delete"}
+        refetch={refetch}
+        currentData={selectedAction?.data}
+        handleChangeAction={handleChangeAction}
       />
     </div>
   );

@@ -88,7 +88,7 @@ export default function AppSidebar() {
                   >
                     <Avatar className="h-8 w-8 rounded-lg">
                       <AvatarImage
-                        src={profile.avatar_url}
+                        src={profile.avatar_url || undefined}
                         alt={profile.name}
                         className="object-cover object-center"
                       />
@@ -117,8 +117,9 @@ export default function AppSidebar() {
                     <div className="flex items-center gap-2 px-1 py-1.5">
                       <Avatar className="h-8 w-8 rounded-lg">
                         <AvatarImage
-                          src={profile.avatar_url}
+                          src={profile.avatar_url || undefined}
                           alt={profile.name}
+                          className="object-cover object-center"
                         />
                         <AvatarFallback className="rounded-lg">
                           {profile.name?.charAt(0) ?? "R"}
