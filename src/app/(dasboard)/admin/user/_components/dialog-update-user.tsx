@@ -46,13 +46,18 @@ export default function DialogUpdateUser({
   const onSubmit = form.handleSubmit((data) => {
     const formData = new FormData();
 
-    Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value as string | Blob);
-    });
-
-    // Avatar berubah (user pilih file baru) -> kirim url lama untuk dihapus
-    if (data.avatar_url instanceof File) {
+    if (currentData?.avatar_url !== data.avatar_url) {
+      Object.entries(data).forEach(([key, value]) => {
+        formData.append(
+          key,
+          key === "avatar_url" ? (preview?.file ?? "") : String(value),
+        );
+      });
       formData.append("old_avatar_url", currentData?.avatar_url ?? "");
+    } else {
+      Object.entries(data).forEach(([key, value]) => {
+        formData.append(key, String(value));
+      });
     }
 
     formData.append("id", currentData?.id ?? "");
@@ -82,20 +87,16 @@ export default function DialogUpdateUser({
     if (currentData) {
       form.setValue("name", currentData.name as string);
       form.setValue("role", currentData.role as string);
-      form.setValue("avatar_url", (currentData.avatar_url as string) ?? "");
-      setPreview(
-        currentData.avatar_url
-          ? {
-              file: new File([], currentData.avatar_url as string),
-              displayUrl: currentData.avatar_url as string,
-            }
-          : undefined,
-      );
+      form.setValue("avatar_url", currentData.avatar_url as string);
+      setPreview({
+        file: new File([], currentData.avatar_url as string),
+        displayUrl: currentData.avatar_url as string,
+      });
     }
   }, [currentData]);
 
   return (
-    <Dialog open={open} onOpenChange={handleChangeAction}>
+    <Dialog open={open} onOpenChange={(o) => handleChangeAction?.(o)}>
       <FormUser
         form={form}
         onSubmit={onSubmit}
