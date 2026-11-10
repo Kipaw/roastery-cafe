@@ -20,6 +20,10 @@ export const CATEGORY_LIST = [
     value: "desserts",
     label: "Desserts",
   },
+  {
+    value: "sides",
+    label: "Sides",
+  },
 ];
 
 export const INITIAL_MENU = {
