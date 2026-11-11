@@ -1,16 +1,17 @@
 "use server";
 
+import { environment } from "@/config/environment";
 import { createClient } from "@/lib/supabase/server";
 import { FormState } from "@/types/general";
-import { Cart, OrderFormState } from "@/types/order";
+import { OrderFormState } from "@/types/order";
 import { orderFormSchema } from "@/validations/order-validation";
-import { redirect } from "next/navigation";
+import midtrans from "midtrans-client";
 
 export async function createOrder(
   prevState: OrderFormState,
   formData: FormData,
 ) {
-  let validatedFields = orderFormSchema.safeParse({
+  const validatedFields = orderFormSchema.safeParse({
     customer_name: formData.get("customer_name"),
     table_id: formData.get("table_id"),
     status: formData.get("status"),
@@ -29,12 +30,13 @@ export async function createOrder(
   const supabase = await createClient();
 
   const orderId = `WPUCAFE-${Date.now()}`;
+  const tableId = Number(validatedFields.data.table_id);
 
   const [orderResult, tableResult] = await Promise.all([
     supabase.from("orders").insert({
       order_id: orderId,
       customer_name: validatedFields.data.customer_name,
-      table_id: validatedFields.data.table_id,
+      table_id: tableId,
       status: validatedFields.data.status,
     }),
     supabase
@@ -44,8 +46,9 @@ export async function createOrder(
           validatedFields.data.status === "reserved"
             ? "reserved"
             : "unavailable",
+        updated_at: new Date().toISOString(),
       })
-      .eq("id", validatedFields.data.table_id),
+      .eq("id", tableId),
   ]);
 
   const orderError = orderResult.error;
@@ -64,9 +67,7 @@ export async function createOrder(
     };
   }
 
-  return {
-    status: "success",
-  };
+  return { status: "success" };
 }
 
 export async function updateReservation(
@@ -75,20 +76,24 @@ export async function updateReservation(
 ) {
   const supabase = await createClient();
 
+  const status = formData.get("status") as string;
+  const id = Number(formData.get("id"));
+  const tableIdRaw = formData.get("table_id") as string;
+
   const [orderResult, tableResult] = await Promise.all([
     supabase
       .from("orders")
-      .update({
-        status: formData.get("status"),
-      })
-      .eq("id", formData.get("id")),
-    supabase
-      .from("tables")
-      .update({
-        status:
-          formData.get("status") === "process" ? "unavailable" : "available",
-      })
-      .eq("id", formData.get("table_id")),
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("id", id),
+    tableIdRaw
+      ? supabase
+          .from("tables")
+          .update({
+            status: status === "process" ? "unavailable" : "available",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", Number(tableIdRaw))
+      : Promise.resolve({ error: null }),
   ]);
 
   const orderError = orderResult.error;
@@ -107,34 +112,37 @@ export async function updateReservation(
     };
   }
 
-  return {
-    status: "success",
-  };
+  return { status: "success" };
 }
 
 export async function addOrderItem(
   prevState: OrderFormState,
   data: {
     order_id: string;
-    items: Cart[];
+    items: {
+      order_id: number;
+      menu_id: number;
+      quantity: number;
+      notes: string;
+      status: string;
+    }[];
   },
 ) {
   const supabase = await createClient();
 
-  const payload = data.items.map(({ total, menu, ...item }) => item);
+  const { error } = await supabase.from("orders_menus").insert(data.items);
 
-  const { error } = await supabase.from("orders_menus").insert(payload);
   if (error) {
     return {
       status: "error",
       errors: {
-        ...prevState,
-        _form: [],
+        ...prevState.errors,
+        _form: [error.message],
       },
     };
   }
 
-  redirect(`/order/${data.order_id}`);
+  return { status: "success" };
 }
 
 export async function updateStatusOrderitem(
@@ -146,21 +154,73 @@ export async function updateStatusOrderitem(
   const { error } = await supabase
     .from("orders_menus")
     .update({
-      status: formData.get("status"),
+      status: formData.get("status") as string,
+      updated_at: new Date().toISOString(),
     })
-    .eq("id", formData.get("id"));
+    .eq("id", Number(formData.get("id")));
 
   if (error) {
     return {
       status: "error",
       errors: {
-        ...prevState,
+        ...prevState.errors,
         _form: [error.message],
       },
     };
   }
 
-  return {
-    status: "success",
-  };
+  return { status: "success" };
+}
+
+export async function generatePayment(
+  prevState: FormState,
+  formData: FormData,
+) {
+  const supabase = await createClient();
+  const orderId = formData.get("id") as string; // orders.order_id (text)
+  const grossAmount = Math.round(Number(formData.get("gross_amount")));
+  const customerName = formData.get("customer_name") as string;
+
+  try {
+    const snap = new midtrans.Snap({
+      isProduction: false,
+      serverKey: environment.MIDTRANS_SERVER_KEY,
+    });
+
+    const result = await snap.createTransaction({
+      transaction_details: {
+        order_id: orderId,
+        gross_amount: grossAmount,
+      },
+      customer_details: {
+        first_name: customerName,
+      },
+    });
+
+    await supabase
+      .from("orders")
+      .update({
+        payment_token: result.token,
+        payment_url: result.redirect_url,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("order_id", orderId);
+
+    return {
+      status: "success",
+      data: { payment_token: `${result.token}` },
+    };
+  } catch (e) {
+    const message =
+      (e as { ApiResponse?: { error_messages?: string[] } })?.ApiResponse
+        ?.error_messages?.[0] ??
+      (e as Error)?.message ??
+      "Midtrans error";
+
+    return {
+      status: "error",
+      errors: { ...prevState.errors, _form: [message] },
+      data: { payment_token: "" },
+    };
+  }
 }
