@@ -26,10 +26,8 @@ import { toast } from "sonner";
 import { createOrder } from "../actions";
 
 export default function DialogCreateOrder({
-  refetch,
   tables,
 }: {
-  refetch: () => void;
   tables: Table[] | undefined | null;
 }) {
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -64,7 +62,6 @@ export default function DialogCreateOrder({
       toast.success("Create Order Success");
       form.reset();
       closeRef.current?.click();
-      refetch();
     }
   }, [createOrderState]);
 

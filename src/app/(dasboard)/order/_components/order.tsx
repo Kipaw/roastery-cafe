@@ -37,7 +37,7 @@ export default function OrderManagement() {
   const {
     data: orders,
     isLoading,
-    refetch,
+    refetch: refetchOrders,
   } = useQuery({
     queryKey: ["orders", currentPage, currentLimit, currentSearch],
     queryFn: async () => {
@@ -70,7 +70,7 @@ export default function OrderManagement() {
     },
   });
 
-  const { data: tables } = useQuery({
+  const { data: tables, refetch: refetchTables } = useQuery({
     queryKey: ["tables-for-order"],
     queryFn: async () => {
       const result = await supabase
@@ -82,6 +82,24 @@ export default function OrderManagement() {
       return result.data as Table[] | null;
     },
   });
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("change-order-list")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders" },
+        () => {
+          refetchOrders();
+          refetchTables();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const totalPages = useMemo(() => {
     return orders && orders.count !== null
@@ -121,7 +139,6 @@ export default function OrderManagement() {
 
     if (reservedState?.status === "success") {
       toast.success("Update Reservation Success");
-      refetch();
     }
   }, [reservedState]);
 
@@ -213,7 +230,7 @@ export default function OrderManagement() {
               <DialogTrigger render={<Button variant="outline" />}>
                 Create
               </DialogTrigger>
-              <DialogCreateOrder tables={tables} refetch={refetch} />
+              <DialogCreateOrder tables={tables} />
             </Dialog>
           )}
         </div>

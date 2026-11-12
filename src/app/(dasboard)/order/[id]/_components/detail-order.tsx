@@ -48,7 +48,7 @@ export default function DetailOrder({ id }: { id: string }) {
     useDataTable();
   const profile = useAuthStore((state) => state.profile);
 
-  const { data: order } = useQuery({
+  const { data: order, refetch: refetchOrder } = useQuery({
     queryKey: ["order", id],
     queryFn: async () => {
       const result = await supabase
@@ -94,6 +94,42 @@ export default function DetailOrder({ id }: { id: string }) {
     refetchOnMount: "always",
   });
 
+  useEffect(() => {
+    if (!order?.id) return;
+
+    const channel = supabase
+      .channel(`change-order-detail-${order.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "orders_menus",
+          filter: `order_id=eq.${order.id}`,
+        },
+        () => {
+          refetchOrderMenu();
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "orders",
+          filter: `id=eq.${order.id}`,
+        },
+        () => {
+          refetchOrder();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [order?.id]);
+
   const [updateStatusOrderState, updateStatusOrderAction] = useActionState(
     updateStatusOrderitem,
     INITIAL_STATE_ACTION,
@@ -119,7 +155,6 @@ export default function DetailOrder({ id }: { id: string }) {
 
     if (updateStatusOrderState?.status === "success") {
       toast.success("Update Status Order Success");
-      refetchOrderMenu();
     }
   }, [updateStatusOrderState]);
 
