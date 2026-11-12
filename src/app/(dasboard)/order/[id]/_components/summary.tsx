@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { INITIAL_STATE_GENERATE_PAYMENT } from "@/constants/order-constant";
 import { usePricing } from "@/hooks/use-pricing";
 import { convertIDR } from "@/lib/utils";
+import { useAuthStore } from "@/stores/auth-store";
 import { Menu } from "@/validations/menu-validation";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -33,6 +34,7 @@ export default function Summary({
 }) {
   const router = useRouter();
   const { grandTotal, totalPrice, tax, service } = usePricing(orderMenu);
+  const profile = useAuthStore((state) => state.profile);
   const table = order?.tables as { name: string } | null;
 
   const isAllServed = useMemo(() => {
@@ -115,7 +117,7 @@ export default function Summary({
             <p className="text-lg font-semibold">Total</p>
             <p className="text-lg font-semibold">{convertIDR(grandTotal)}</p>
           </div>
-          {order?.status === "process" && (
+          {order?.status === "process" && profile.role !== "kitchen" && (
             <Button
               type="button"
               onClick={handleGeneratePayment}

@@ -10,6 +10,7 @@ import { HEADER_TABLE_ORDER } from "@/constants/order-constant";
 import useDataTable from "@/hooks/use-data-table";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/auth-store";
 import { Table } from "@/validations/table-validation";
 import { useQuery } from "@tanstack/react-query";
 import { Ban, Link2Icon, ScrollText } from "lucide-react";
@@ -31,6 +32,7 @@ export default function OrderManagement() {
     handleChangeLimit,
     handleChangeSearch,
   } = useDataTable();
+  const profile = useAuthStore((state) => state.profile);
 
   const {
     data: orders,
@@ -171,7 +173,7 @@ export default function OrderManagement() {
         <DropdownAction
           key={order.id}
           menu={
-            order.status === "reserved"
+            order.status === "reserved" && profile.role !== "kitchen"
               ? reservedActionList.map((item) => ({
                   label: item.label,
                   action: () =>
@@ -195,7 +197,7 @@ export default function OrderManagement() {
         />,
       ];
     });
-  }, [orders, currentPage, currentLimit]);
+  }, [orders, currentPage, currentLimit, profile.role]);
 
   return (
     <div className="w-full">
@@ -206,12 +208,14 @@ export default function OrderManagement() {
             placeholder="Search..."
             onChange={(e) => handleChangeSearch(e.target.value)}
           />
-          <Dialog>
-            <DialogTrigger render={<Button variant="outline" />}>
-              Create
-            </DialogTrigger>
-            <DialogCreateOrder tables={tables} refetch={refetch} />
-          </Dialog>
+          {profile.role !== "kitchen" && (
+            <Dialog>
+              <DialogTrigger render={<Button variant="outline" />}>
+                Create
+              </DialogTrigger>
+              <DialogCreateOrder tables={tables} refetch={refetch} />
+            </Dialog>
+          )}
         </div>
       </div>
       <DataTable

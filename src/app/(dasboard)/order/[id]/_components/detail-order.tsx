@@ -13,6 +13,7 @@ import { HEADER_TABLE_DETAIL_ORDER } from "@/constants/order-constant";
 import useDataTable from "@/hooks/use-data-table";
 import { createClient } from "@/lib/supabase/client";
 import { cn, convertIDR } from "@/lib/utils";
+import { useAuthStore } from "@/stores/auth-store";
 import { useQuery } from "@tanstack/react-query";
 import { EllipsisVertical } from "lucide-react";
 import Image from "next/image";
@@ -45,6 +46,7 @@ export default function DetailOrder({ id }: { id: string }) {
   const supabase = createClient();
   const { currentPage, currentLimit, handleChangePage, handleChangeLimit } =
     useDataTable();
+  const profile = useAuthStore((state) => state.profile);
 
   const { data: order } = useQuery({
     queryKey: ["order", id],
@@ -208,12 +210,14 @@ export default function DetailOrder({ id }: { id: string }) {
     <div className="w-full space-y-4">
       <div className="flex w-full items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">Detail Order</h1>
-        <Button
-          nativeButton={false}
-          render={<Link href={`/order/${id}/add`} />}
-        >
-          Add Order Item
-        </Button>
+        {profile.role !== "kitchen" && (
+          <Button
+            nativeButton={false}
+            render={<Link href={`/order/${id}/add`} />}
+          >
+            Add Order Item
+          </Button>
+        )}
       </div>
       <div className="flex w-full flex-col gap-4 lg:flex-row">
         <div className="lg:w-2/3">
