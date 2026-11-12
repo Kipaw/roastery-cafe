@@ -88,6 +88,8 @@ export default function DetailOrder({ id }: { id: string }) {
       return result;
     },
     enabled: !!order?.id,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   const [updateStatusOrderState, updateStatusOrderAction] = useActionState(

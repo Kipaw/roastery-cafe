@@ -24,4 +24,4 @@ export const menuSchema = z.object({
 });
 
 export type MenuForm = z.infer<typeof menuFormSchema>;
-export type Menu = z.infer<typeof menuSchema> & { id: string };
+export type Menu = z.infer<typeof menuSchema> & { id: number };

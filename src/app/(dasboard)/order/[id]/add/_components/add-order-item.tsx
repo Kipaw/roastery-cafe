@@ -8,7 +8,7 @@ import useDataTable from "@/hooks/use-data-table";
 import { createClient } from "@/lib/supabase/client";
 import { Cart } from "@/types/order";
 import { Menu } from "@/validations/menu-validation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -116,6 +116,7 @@ export default function AddOrderItem({ id }: { id: string }) {
 
   const [addOrderItemState, addOrderItemAction, isPendingAddOrderItem] =
     useActionState(addOrderItem, INITIAL_STATE_ACTION);
+  const queryClient = useQueryClient();
 
   const handleOrder = () => {
     if (!order?.id || carts.length === 0) return;
@@ -146,6 +147,7 @@ export default function AddOrderItem({ id }: { id: string }) {
     if (addOrderItemState?.status === "success") {
       toast.success("Add Order Item Success");
       setCarts([]);
+      queryClient.removeQueries({ queryKey: ["orders_menu"] });
       router.push(`/order/${id}`);
     }
   }, [addOrderItemState]);

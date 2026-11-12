@@ -10,6 +10,7 @@ import { usePricing } from "@/hooks/use-pricing";
 import { convertIDR } from "@/lib/utils";
 import { Menu } from "@/validations/menu-validation";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { startTransition, useActionState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { generatePayment } from "../../actions";
@@ -30,6 +31,7 @@ export default function Summary({
     | undefined;
   id: string;
 }) {
+  const router = useRouter();
   const { grandTotal, totalPrice, tax, service } = usePricing(orderMenu);
   const table = order?.tables as { name: string } | null;
 
@@ -68,7 +70,12 @@ export default function Summary({
       generatePaymentState?.status === "success" &&
       generatePaymentState.data?.payment_token
     ) {
-      window.snap.pay(generatePaymentState.data.payment_token);
+      window.snap.pay(generatePaymentState.data.payment_token, {
+        onSuccess: () => router.push(`/payment/success?order_id=${id}`),
+        onPending: () => router.push("/order"),
+        onError: () => router.push("/payment/failed"),
+        onClose: () => {},
+      });
     }
   }, [generatePaymentState]);
 

@@ -21,7 +21,7 @@ export default function DialogDeleteMenu({
 
   const onSubmit = () => {
     const formData = new FormData();
-    formData.append("id", currentData!.id as string);
+    formData.append("id", String(currentData!.id));
     formData.append("image_url", currentData!.image_url as string);
     startTransition(() => {
       deleteMenuAction(formData);

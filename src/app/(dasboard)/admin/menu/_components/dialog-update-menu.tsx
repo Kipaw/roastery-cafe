@@ -59,7 +59,7 @@ export default function DialogUpdateMenu({
       });
     }
 
-    formData.append("id", currentData?.id ?? "");
+    formData.append("id", String(currentData?.id ?? ""));
 
     startTransition(() => {
       updateMenuAction(formData);

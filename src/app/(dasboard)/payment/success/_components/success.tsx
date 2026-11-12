@@ -16,13 +16,23 @@ export default function Success() {
   const { mutate } = useMutation({
     mutationKey: ["mutateUpdateStatusOrder"],
     mutationFn: async () => {
-      await supabase
+      const now = new Date().toISOString();
+
+      const { data: order, error } = await supabase
         .from("orders")
-        .update({
-          status: "settled",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("order_id", order_id);
+        .update({ status: "settled", updated_at: now })
+        .eq("order_id", order_id)
+        .select("table_id")
+        .single();
+
+      if (error) throw error;
+
+      if (order?.table_id) {
+        await supabase
+          .from("tables")
+          .update({ status: "available", updated_at: now })
+          .eq("id", order.table_id);
+      }
     },
   });
 

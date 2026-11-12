@@ -9,7 +9,15 @@ export const metadata = {
 declare global {
   interface Window {
     snap: {
-      pay: (token: string) => void;
+      pay: (
+        token: string,
+        options?: {
+          onSuccess?: () => void;
+          onPending?: () => void;
+          onError?: () => void;
+          onClose?: () => void;
+        },
+      ) => void;
     };
   }
 }
