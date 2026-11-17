@@ -1,13 +1,14 @@
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import AuthStoreProvider from "@/providers/auth-store-provider";
-import { cookies } from "next/headers";
 import ReactQueryProvider from "@/providers/react-query-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
+import type { Metadata } from "next";
+import { Geist_Mono, Montserrat } from "next/font/google";
+import { cookies } from "next/headers";
+import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
 });
 
@@ -16,6 +17,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const metadata: Metadata = {
+  title: {
+    default: "Sinergy Roastery",
+    template: "%s | Sinergy Roastery",
+  },
+  description: "Good Beans, Better Days.",
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -23,10 +32,11 @@ export default async function RootLayout({
 }>) {
   const cookiesStore = await cookies();
   const profile = JSON.parse(cookiesStore.get("user_profile")?.value ?? "{}");
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="id" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
+        className={`${montserrat.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <ReactQueryProvider>
           <AuthStoreProvider profile={profile}>

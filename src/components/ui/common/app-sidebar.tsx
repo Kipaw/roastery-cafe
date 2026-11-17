@@ -1,6 +1,26 @@
 "use client";
 
-import { Coffee, EllipsisVertical, LogOut } from "lucide-react";
+import { signOut } from "@/actions/auth-action";
+import {
+  SIDEBAR_MENU_LIST,
+  SidebarMenuKey,
+} from "@/constants/sidebar-constant";
+import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/auth-store";
+import { EllipsisVertical, LogOut } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Avatar, AvatarFallback, AvatarImage } from "../avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -13,40 +33,34 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "../sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "../avatar";
-import {
-  SIDEBAR_MENU_LIST,
-  SidebarMenuKey,
-} from "@/constants/sidebar-constant";
-import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
-import { signOut } from "@/actions/auth-action";
-import { useAuthStore } from "@/stores/auth-store";
 
 export default function AppSidebar() {
   const { isMobile } = useSidebar();
   const pathname = usePathname();
   const profile = useAuthStore((state) => state.profile);
 
+  const isActive = (url: string) =>
+    url === "/admin" ? pathname === url : pathname.startsWith(url);
+
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader>
+      <SidebarHeader className="py-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg">
-              <div className="bg-teal-500 flex p-2 items-center justify-center rounded-md">
-                <Coffee className="size-4" />
-              </div>
-              <span className="font-semibold">Roastery Cafe</span>
+            <SidebarMenuButton
+              size="lg"
+              className="h-auto justify-center hover:bg-transparent"
+              render={<Link href="/" />}
+            >
+              {/* ganti ke versi putih (sinergy-logo-white.png) kalau ada */}
+              <Image
+                src="/sinergy-logo.svg"
+                alt="Sinergy Roastery"
+                width={120}
+                height={120}
+                priority
+                className="h-auto w-24 rounded-md bg-sidebar-foreground p-2 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-1"
+              />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -60,11 +74,12 @@ export default function AppSidebar() {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       tooltip={item.title}
-                      render={<a href={item.url} />}
-                      className={cn("px-4 py-3 h-auto", {
-                        "bg-teal-500 text-white hover:bg-teal-500 hover:text-white":
-                          pathname === item.url,
-                      })}
+                      render={<Link href={item.url} />}
+                      className={cn(
+                        "h-auto rounded-lg px-4 py-3 font-medium",
+                        isActive(item.url) &&
+                          "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground",
+                      )}
                     >
                       {item.icon && <item.icon />}
                       <span>{item.title}</span>
@@ -92,13 +107,13 @@ export default function AppSidebar() {
                         alt={profile.name}
                         className="object-cover object-center"
                       />
-                      <AvatarFallback className="rounded-lg">
+                      <AvatarFallback className="rounded-lg text-foreground">
                         {profile.name?.charAt(0) ?? "R"}
                       </AvatarFallback>
                     </Avatar>
                     <div className="leading-tight">
                       <h4 className="truncate font-medium">{profile.name}</h4>
-                      <p className="text-muted-foreground truncate text-xs capitalize">
+                      <p className="truncate text-xs capitalize text-sidebar-foreground/70">
                         {profile.role}
                       </p>
                     </div>
@@ -127,7 +142,7 @@ export default function AppSidebar() {
                       </Avatar>
                       <div className="leading-tight">
                         <h4 className="truncate font-medium">{profile.name}</h4>
-                        <p className="text-muted-foreground truncate text-xs capitalize">
+                        <p className="truncate text-xs capitalize text-muted-foreground">
                           {profile.role}
                         </p>
                       </div>

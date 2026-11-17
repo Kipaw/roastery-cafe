@@ -14,7 +14,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { Table } from "@/validations/table-validation";
 import { useQuery } from "@tanstack/react-query";
 import { Ban, Link2Icon, ScrollText } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { startTransition, useActionState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { updateReservation } from "../actions";
@@ -24,6 +24,7 @@ type OrderTable = { id: number; name: string } | null;
 
 export default function OrderManagement() {
   const supabase = createClient();
+  const router = useRouter();
   const {
     currentPage,
     currentLimit,
@@ -178,12 +179,15 @@ export default function OrderManagement() {
         table?.name ?? "-",
         <div
           key={`${order.id}-status`}
-          className={cn("w-fit rounded-full px-2 py-1 text-white capitalize", {
-            "bg-lime-600": order.status === "settled",
-            "bg-sky-600": order.status === "process",
-            "bg-amber-600": order.status === "reserved",
-            "bg-red-600": order.status === "canceled",
-          })}
+          className={cn(
+            "w-fit rounded-full px-3 py-1 text-xs font-medium text-white capitalize",
+            {
+              "bg-lime-600": order.status === "settled",
+              "bg-sky-600": order.status === "process",
+              "bg-amber-600": order.status === "reserved",
+              "bg-red-600": order.status === "canceled",
+            },
+          )}
         >
           {order.status}
         </div>,
@@ -199,15 +203,12 @@ export default function OrderManagement() {
               : [
                   {
                     label: (
-                      <Link
-                        href={`/order/${order.order_id}`}
-                        className="flex items-center gap-2"
-                      >
+                      <span className="flex items-center gap-2">
                         <ScrollText />
                         Detail
-                      </Link>
+                      </span>
                     ),
-                    type: "link",
+                    action: () => router.push(`/order/${order.order_id}`),
                   },
                 ]
           }
@@ -219,7 +220,7 @@ export default function OrderManagement() {
   return (
     <div className="w-full">
       <div className="mb-4 flex w-full flex-col justify-between gap-2 lg:flex-row">
-        <h1 className="text-2xl font-bold">Order Management</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Order Management</h1>
         <div className="flex gap-2">
           <Input
             placeholder="Search..."

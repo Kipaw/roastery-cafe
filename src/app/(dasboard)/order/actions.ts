@@ -29,7 +29,7 @@ export async function createOrder(
 
   const supabase = await createClient();
 
-  const orderId = `WPUCAFE-${Date.now()}`;
+  const orderId = `SINROAST-${Date.now()}`;
   const tableId = Number(validatedFields.data.table_id);
 
   const [orderResult, tableResult] = await Promise.all([

@@ -3,7 +3,7 @@ import Script from "next/script";
 import DetailOrder from "./_components/detail-order";
 
 export const metadata = {
-  title: "WPU Cafe | Detail Order",
+  title: "Sinergy Roastery | Detail Order",
 };
 
 declare global {
