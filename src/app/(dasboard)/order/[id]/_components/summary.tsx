@@ -112,114 +112,116 @@ export default function Summary({
   }, [generatePaymentState]);
 
   return (
-    <div className="relative w-full">
-      <div className="relative space-y-4 rounded-t-2xl border border-b-0 bg-card px-6 pb-8 pt-6 shadow-sm">
-        {/* header */}
-        <div className="flex flex-col items-center gap-2 text-center">
-          <Image
-            src="/sinergy-logo.svg"
-            alt="Sinergy Roastery"
-            width={100}
-            height={100}
-            className="h-auto w-20"
+    <div className="sticky top-4 max-h-[calc(100svh-6rem)] w-full overflow-y-auto">
+      <div className="relative w-full">
+        <div className="relative space-y-4 rounded-t-2xl border border-b-0 bg-card px-6 pb-8 pt-6 shadow-sm">
+          {/* header */}
+          <div className="flex flex-col items-center gap-2 text-center">
+            <Image
+              src="/sinergy-logo.svg"
+              alt="Sinergy Roastery"
+              width={100}
+              height={100}
+              className="h-auto w-20"
+            />
+            <p className="text-[10px] tracking-[0.3em] text-muted-foreground">
+              GOOD BEANS · BETTER DAYS
+            </p>
+          </div>
+
+          <TearLine />
+
+          {/* info order */}
+          <div className="space-y-1.5 font-mono text-xs">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">ORDER</span>
+              <span className="max-w-40 truncate">{id}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">CUSTOMER</span>
+              <span className="capitalize">{order?.customer_name ?? "-"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">TABLE</span>
+              <span>{table?.name ?? "-"}</span>
+            </div>
+          </div>
+
+          <div className="border-t border-dashed border-border" />
+
+          {/* daftar item */}
+          <div className="space-y-2 font-mono text-xs">
+            {orderMenu && orderMenu.length > 0 ? (
+              orderMenu.map((item, i) => (
+                <div key={i} className="flex justify-between gap-2">
+                  <span className="truncate">
+                    {item.quantity}x {item.menus?.name ?? "Menu deleted"}
+                  </span>
+                  <span>
+                    {convertIDR((item.menus?.price ?? 0) * item.quantity)}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground">No items yet</p>
+            )}
+          </div>
+
+          <div className="border-t border-dashed border-border" />
+
+          {/* total */}
+          <div className="space-y-2">
+            <Row label="Subtotal" value={convertIDR(totalPrice)} />
+            <Row label="Tax (12%)" value={convertIDR(tax)} />
+            <Row label="Service (5%)" value={convertIDR(service)} />
+          </div>
+
+          <TearLine />
+
+          <Row label="TOTAL" value={convertIDR(grandTotal)} strong />
+
+          {order?.status === "process" && profile.role !== "kitchen" && (
+            <Button
+              type="button"
+              size="lg"
+              onClick={handleGeneratePayment}
+              disabled={!isAllServed || isPendingGeneratePayment}
+              className="w-full cursor-pointer rounded-full font-semibold"
+            >
+              {isPendingGeneratePayment ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                "Pay"
+              )}
+            </Button>
+          )}
+
+          {/* barcode dekoratif */}
+          <div
+            aria-hidden
+            className="mx-auto mt-2 h-10 w-3/4 opacity-70"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(90deg, var(--foreground) 0 2px, transparent 2px 4px, var(--foreground) 4px 5px, transparent 5px 9px, var(--foreground) 9px 12px, transparent 12px 14px)",
+            }}
           />
-          <p className="text-[10px] tracking-[0.3em] text-muted-foreground">
-            GOOD BEANS · BETTER DAYS
+          <p className="text-center text-[10px] tracking-[0.3em] text-muted-foreground">
+            THANK YOU
           </p>
         </div>
 
-        <TearLine />
-
-        {/* info order */}
-        <div className="space-y-1.5 font-mono text-xs">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">ORDER</span>
-            <span className="max-w-40 truncate">{id}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">CUSTOMER</span>
-            <span className="capitalize">{order?.customer_name ?? "-"}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">TABLE</span>
-            <span>{table?.name ?? "-"}</span>
-          </div>
-        </div>
-
-        <div className="border-t border-dashed border-border" />
-
-        {/* daftar item */}
-        <div className="space-y-2 font-mono text-xs">
-          {orderMenu && orderMenu.length > 0 ? (
-            orderMenu.map((item, i) => (
-              <div key={i} className="flex justify-between gap-2">
-                <span className="truncate">
-                  {item.quantity}x {item.menus?.name ?? "Menu deleted"}
-                </span>
-                <span>
-                  {convertIDR((item.menus?.price ?? 0) * item.quantity)}
-                </span>
-              </div>
-            ))
-          ) : (
-            <p className="text-center text-muted-foreground">No items yet</p>
-          )}
-        </div>
-
-        <div className="border-t border-dashed border-border" />
-
-        {/* total */}
-        <div className="space-y-2">
-          <Row label="Subtotal" value={convertIDR(totalPrice)} />
-          <Row label="Tax (12%)" value={convertIDR(tax)} />
-          <Row label="Service (5%)" value={convertIDR(service)} />
-        </div>
-
-        <TearLine />
-
-        <Row label="TOTAL" value={convertIDR(grandTotal)} strong />
-
-        {order?.status === "process" && profile.role !== "kitchen" && (
-          <Button
-            type="button"
-            size="lg"
-            onClick={handleGeneratePayment}
-            disabled={!isAllServed || isPendingGeneratePayment}
-            className="w-full cursor-pointer rounded-full font-semibold"
-          >
-            {isPendingGeneratePayment ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              "Pay"
-            )}
-          </Button>
-        )}
-
-        {/* barcode dekoratif */}
+        {/* tepi bergerigi di bawah */}
         <div
           aria-hidden
-          className="mx-auto mt-2 h-10 w-3/4 opacity-70"
+          className="h-3 w-full"
           style={{
             backgroundImage:
-              "repeating-linear-gradient(90deg, var(--foreground) 0 2px, transparent 2px 4px, var(--foreground) 4px 5px, transparent 5px 9px, var(--foreground) 9px 12px, transparent 12px 14px)",
+              "linear-gradient(135deg, var(--card) 50%, transparent 50%), linear-gradient(225deg, var(--card) 50%, transparent 50%)",
+            backgroundSize: "12px 12px",
+            backgroundRepeat: "repeat-x",
           }}
         />
-        <p className="text-center text-[10px] tracking-[0.3em] text-muted-foreground">
-          THANK YOU
-        </p>
       </div>
-
-      {/* tepi bergerigi di bawah */}
-      <div
-        aria-hidden
-        className="h-3 w-full"
-        style={{
-          backgroundImage:
-            "linear-gradient(135deg, var(--card) 50%, transparent 50%), linear-gradient(225deg, var(--card) 50%, transparent 50%)",
-          backgroundSize: "12px 12px",
-          backgroundRepeat: "repeat-x",
-        }}
-      />
     </div>
   );
 }

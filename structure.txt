@@ -1,0 +1,183 @@
+﻿# Project Structure: flight-app
+public
+    file.svg
+    globe.svg
+    next.svg
+    sinergy2-logo.svg
+    sinergy-logo.svg
+    vercel.svg
+    window.svg
+src
+    actions
+        auth-action.ts
+        storage-action.ts
+    app
+        (auth)
+            login
+                _components
+                    login.tsx
+                actions.ts
+                page.tsx
+            layout.tsx
+        (dasboard)
+            _components
+                dashboard-breadcrumb.tsx
+            admin
+                _components
+                    dashboard.tsx
+                menu
+                    _components
+                        dialog-create-menu.tsx
+                        dialog-delete-menu'.tsx
+                        dialog-update-menu.tsx
+                        form-menu.tsx
+                        menu.tsx
+                    actions.tsx
+                    page.tsx
+                table
+                    _components
+                        dialog-create-table.tsx
+                        dialog-delete-table.tsx
+                        dialog-update-table.tsx
+                        form-table.tsx
+                        table.tsx
+                    actions.tsx
+                    page.tsx
+                user
+                    _components
+                        dialog-create-user.tsx
+                        dialog-delete-user.tsx
+                        dialog-update-user.tsx
+                        form-user.tsx
+                        user.tsx
+                    actions.ts
+                    page.tsx
+                page.tsx
+            order
+                [id]
+                    _components
+                        detail-order.tsx
+                        summary.tsx
+                    add
+                        _components
+                            add-order-item.tsx
+                            card-menu.tsx
+                            cart.tsx
+                            loading-card-menu.tsx
+                        page.tsx
+                    page.tsx
+                _components
+                    dialog-create-order.tsx
+                    order.tsx
+                actions.ts
+                page.tsx
+            payment
+                failed
+                    _components
+                        failed.tsx
+                    page.tsx
+                success
+                    _components
+                        success.tsx
+                    page.tsx
+                layout.tsx
+            layout.tsx
+        favicon.ico
+        globals.css
+        layout.tsx
+        page.tsx
+    components
+        ui
+            common
+                app-sidebar.tsx
+                darkmode-toggle.tsx
+                data-table.tsx
+                dialog-delete.tsx
+                dropdown-action.tsx
+                form-image.tsx
+                form-input.tsx
+                form-select.tsx
+                line-chart.tsx
+                pagination-data-table.tsx
+            avatar.tsx
+            breadcrumb.tsx
+            button.tsx
+            card.tsx
+            dialog.tsx
+            dropdown-menu.tsx
+            field.tsx
+            input.tsx
+            label.tsx
+            pagination.tsx
+            select.tsx
+            separator.tsx
+            sheet.tsx
+            sidebar.tsx
+            skeleton.tsx
+            sonner.tsx
+            table.tsx
+            textarea.tsx
+            tooltip.tsx
+    config
+        environment.ts
+    constants
+        auth-constant.ts
+        data-table-constant.ts
+        general-constant.ts
+        menu-constant.ts
+        order-constant.ts
+        sidebar-constant.ts
+        table-constant.ts
+        user-constant.ts
+    hooks
+        use-data-table.tsx
+        use-debounce.tsx
+        use-mobile.ts
+        use-pricing.tsx
+    lib
+        supabase
+            admin.ts
+            client.ts
+            default.ts
+            middleware.ts
+            server.ts
+        utils.ts
+    migrations
+        001-auth-profiles.sql
+        002-menu.sql
+        003-table.sql
+        004-order.sql
+    providers
+        auth-store-provider.tsx
+        react-query-provider.tsx
+        theme-provider.tsx
+    stores
+        auth-store.ts
+    types
+        auth.d.ts
+        general.d.ts
+        menu.d.ts
+        midtrans.d.ts
+        order.d.ts
+        table.d.ts
+    validations
+        auth-validation.ts
+        menu-validation.ts
+        order-validation.ts
+        table-validation.ts
+    global.d.ts
+    middleware.ts
+.env.local
+.gitignore
+.vscode
+components.json
+env.example
+eslint.config.mjs
+next.config.ts
+next-env.d.ts
+package.json
+package-lock.json
+postcss.config.mjs
+README.md
+structure.txt
+tsconfig.json

@@ -82,6 +82,9 @@ export default function OrderManagement() {
 
       return result.data as Table[] | null;
     },
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 
   useEffect(() => {
@@ -92,6 +95,13 @@ export default function OrderManagement() {
         { event: "*", schema: "public", table: "orders" },
         () => {
           refetchOrders();
+          refetchTables();
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tables" },
+        () => {
           refetchTables();
         },
       )
